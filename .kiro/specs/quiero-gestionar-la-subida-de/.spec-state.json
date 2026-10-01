@@ -1,0 +1,15 @@
+{
+  "decisions": [
+    {
+      "id": "registry",
+      "title": "¿En qué registro público publicamos las imágenes?",
+      "options": ["Docker Hub (docker.io)", "GitHub Container Registry (ghcr.io)"],
+      "recommended": "Docker Hub (docker.io)",
+      "answer": "Docker Hub (docker.io)"
+    }
+  ],
+  "blocking": null,
+  "context": {
+    "template": "docker-compose.yml de la raíz + DEPLOY.md, migrado a imágenes publicadas en Docker Hub + Traefik. Implementación completa: scripts/build-push.ps1, docker-compose.prod.yml, .env.prod.example, DEPLOY-TRAEFIK.md."
+  }
+}

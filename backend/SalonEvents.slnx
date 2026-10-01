@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="SalonEvents.Api/SalonEvents.Api.csproj" />
+  <Project Path="SalonEvents.AppHost/SalonEvents.AppHost.csproj" />
+  <Project Path="SalonEvents.Tests/SalonEvents.Tests.csproj" />
+</Solution>

@@ -1,0 +1,44 @@
+# Plan de mejoras de UI — Solo frontend
+
+Mejoras exclusivamente de interfaz (calendario, estados de carga, login/registro).
+No cambia contratos de API ni backend. Ejecutar de arriba hacia abajo, una a la vez.
+Cada tarea es verificable con `npm run lint`, `npm run test` y `npm run build` (y revisión visual).
+
+Archivos de trabajo: `frontend/src/**`. Sin dependencias nuevas salvo que una tarea lo indique.
+
+---
+
+## A. Sistema de estilos (base para el resto)
+
+- [x] A.1 **Tokens de tema y modo oscuro.** En `src/styles/app.css`, completar la paleta con pares fondo+texto para cada superficie, añadir la variable faltante `--accent` (hoy `.tab-row` la usa con fallback), y un bloque `@media (prefers-color-scheme: dark)` que redefina los tokens. Verificar que ningún color quede escrito a mano (hex sueltos) fuera de `:root`. (Base visual) — Paleta ampliada con pares fondo+contraste (`--*-contrast`, `--info-*`, `--surface-2`, `--focus-ring`, `--overlay`, `--skeleton-*`, `--shadow`); bloque dark completo vía `prefers-color-scheme`; `color-scheme: light dark` en `body`; inputs con fondo/texto del tema; todos los hex sueltos migrados a tokens (verificado: 0 fuera de `:root`/dark). Lint · 16/16 tests · build OK.
+- [x] A.2 **Transiciones y microinteracciones.** Añadir `transition` suave a `.btn`, `.day-cell` (hover/selección) y overlay/modal (fade + scale al abrir), respetando `@media (prefers-reduced-motion: reduce)` para desactivarlas. (Pulido) — `.btn` con transición de color/transform + `:active` translateY; `.day-cell:hover` eleva y resalta con `--accent`; overlay con `overlay-in` (fade) y panel con `modal-in` (fade + scale, cubic-bezier); bloque `prefers-reduced-motion` global que anula animaciones/transiciones/transforms. Lint · 16/16 tests · build OK.
+
+## B. Calendario
+
+- [x] B.1 **Resaltar el día de hoy.** `DayCell` recibe `isToday`; `Calendar` lo calcula comparando la clave del día con la fecha local de hoy. Estilo `.day-cell--today` (borde/acento distinto de "seleccionado" y de "apartado"), con `aria-current="date"`. (Legibilidad) — Helper `todayKey()` en `dates.js` (fecha local, consistente con `dateKey`); `DayCell` con prop `isToday`, `aria-current="date"` y `aria-label` con "(hoy)"; estilo `.day-cell--today` (borde acento + número en píldora de acento, distinto de seleccionado/apartado). +3 tests (2 en `DayCell`, 1 `todayKey`). Lint · 19/19 tests · build OK.
+- [x] B.2 **Leyenda y contador del mes.** Bajo la rejilla, una pequeña leyenda de colores (Hoy / Apartado / Con eventos / Disponible) y, en modo admin, un contador "N días apartados este mes". Ocultar la parte admin en vista pública. (Orientación) — Leyenda con swatches tokenizados bajo la rejilla ("Con eventos" solo en admin); contador `role="status" aria-live="polite"` con singular/plural y estado cero, visible solo en admin; `reservedCount` derivado del mes visible vía `isReserved`. Lint · 19/19 tests · build OK.
+- [x] B.3 **Navegación de mes mejorada.** Botón "Hoy" que vuelve al mes actual, y transición/aria-live al cambiar de mes para que lectores de pantalla anuncien el mes visible. Deshabilitar visualmente los controles mientras `loading`. (Usabilidad) — Handler `goToday()`; botón "Hoy" agrupado a la derecha, deshabilitado cuando el mes visible ya es el actual (`isCurrentMonth`) o mientras `loading`; título del mes con `aria-live="polite"`; los tres controles de navegación quedan `disabled` durante la carga. Lint · 19/19 tests · build OK.
+
+## C. Estados de carga (skeletons)
+
+- [x] C.1 **Skeleton del calendario.** Reemplazar el texto plano "Cargando…" por una rejilla skeleton (celdas con shimmer) mientras se carga el mes, para evitar el salto de layout. Componente `CalendarSkeleton`. Respetar `prefers-reduced-motion`. (Percepción de velocidad) — Componente `CalendarSkeleton` (7×N celdas placeholder, `aria-hidden`) mostrado mientras `loading` en lugar de la rejilla, mismo layout = sin salto; carga anunciada con `role="status"` `.sr-only`; shimmer con gradiente animado que usa `--skeleton-*` y queda estático bajo el `prefers-reduced-motion` global. Lint · 19/19 tests · build OK.
+- [x] C.2 **Estados de botón con spinner.** Un componente `Spinner` reutilizable; los botones en estado `busy`/`submitting` (login, registro, guardar, eliminar) muestran spinner inline + texto, y quedan `aria-busy`. (Feedback) — Componente `Spinner` (aro giratorio `currentColor`, `aria-hidden` + etiqueta opcional); aplicado con `aria-busy` en Guardar (`EventForm`), Iniciar sesión/Crear cuenta (`EventModal` login) y Confirmar eliminación (`ViewBody` recibe `submitting`, que también deshabilita Editar/Eliminar mientras corre). +2 tests. Lint · 21/21 tests · build OK.
+- [x] C.3 **Skeleton en el modal de vista.** Al abrir un día con eventos, mostrar placeholders de las filas mientras se resuelven (si aplica), y estado vacío con ilustración/texto amable cuando no hay eventos. (Consistencia) — Estado vacío amable en `ViewBody` (icono + título + sugerencia, `role="status"`, tokenizado). Nota: el modal de vista se abre desde datos ya cacheados en `eventsByDay` (sin fetch al abrir), así que un skeleton de filas sería un placeholder falso; se implementó solo la parte con valor real (estado vacío). Lint · 21/21 tests · build OK.
+
+## D. Login y registro
+
+- [x] D.1 **Mostrar/ocultar contraseña.** Toggle de visibilidad en el campo contraseña (icono ojo), accesible por teclado y con `aria-pressed`/`aria-label`. Aplica a login y registro. (Usabilidad) — Estado `showPassword` alterna `type` password/text; botón ojo (`type="button"`) dentro de `.password-field` con `aria-pressed`, `aria-label`/`title` dinámicos ("Mostrar/Ocultar contraseña"), foco visible; sirve para ambas pestañas (login y registro comparten el campo). Lint · 21/21 tests · build OK.
+- [x] D.2 **Validación en vivo + fortaleza de contraseña.** En registro: indicador de fortaleza (longitud/variedad) y validación de formato de correo antes de enviar; mensajes de error por campo en vez de un único banner. Botón deshabilitado hasta que el formulario sea válido. (Calidad de entrada) — Helper puro `lib/authValidation.js` (`isValidEmail`, `passwordStrength` 0-4, `validateAuth`/`isAuthValid`); en `LoginBody`: errores por campo mostrados tras `onBlur` (`touched`) con `aria-invalid`/`role="alert"`, barra de fortaleza (5 niveles) visible en registro con `aria-live`, submit `disabled` hasta `formValid`. +7 tests. Lint · 28/28 tests · build OK.
+- [x] D.3 **Estados de resultado claros.** Diferenciar visualmente error (rojo) vs aviso de confirmación de correo (informativo), con iconos y foco movido al mensaje al aparecer (`role="alert"`/`role="status"` ya presentes; añadir manejo de foco). Al cambiar de pestaña login/registro, limpiar estado y devolver foco al primer campo. (Feedback) — Mensajes `.auth-msg--info` (✉️, `role="status"`) vs `.auth-msg--error` (⚠️, `role="alert"`), tokenizados; `messageRef` + `useEffect` mueven el foco al mensaje cuando aparece (`tabIndex={-1}`); `switchTab` limpia estado y reenfoca el campo de correo (`emailRef`, vía `requestAnimationFrame`). Lint · 28/28 tests · build OK.
+- [x] D.4 **Pulido visual del modal de Acceso.** Pestañas login/registro con indicador activo más claro (underline/segmented control), espaciado consistente, y bloqueo del scroll del body cuando el modal está abierto (aplicable a todos los modales). (Estética) — `.tab-row` rediseñado como segmented control (contenedor con fondo `--surface-2` + borde, botones flex 50/50, activo con superficie elevada y sombra sutil); `useEffect` en `EventModal` fija `body.overflow='hidden'` mientras está montado y lo restaura al cerrar (cubre add/view/login). Lint · 28/28 tests · build OK.
+
+## E. Verificación final
+
+- [x] E.1 Ejecutar `npm run lint`, `npm run test` y `npm run build` en verde. Añadir/ajustar pruebas de los componentes nuevos (Spinner, toggle de contraseña, resaltado de hoy) donde aporte valor. Revisión visual en desktop y móvil (≤560px) y en modo oscuro. (Cierre) — **Código: verde.** `npm run lint` limpio · **28/28 tests** en 6 archivos (nuevos: `Spinner`, `authValidation`, +hoy en `DayCell`, +`todayKey`) · `npm run build` OK. Modo oscuro y contraste cubiertos por tokens con pares fondo+texto (A.1); colapso móvil vía `@media (max-width:560px)`. **Pendiente manual:** la revisión visual automatizada no pudo correr — el Chromium de Playwright no está instalado (`playwright-cli install-browser chromium`, requiere aprobación del usuario). Revisión visual a ojo pendiente del usuario o de instalar Chromium.
+
+---
+
+### Notas de diseño
+- **Accesibilidad primero:** foco visible, `aria-*`, contraste AA en ambos temas, y respeto a `prefers-reduced-motion`.
+- **Sin regresiones de rendimiento:** los skeletons y transiciones son CSS; nada de polling ni fetches extra (se mantiene la caché por mes y `getToken` estable ya implementados).
+- **Alcance cerrado:** solo UI. No se tocan endpoints, DTOs, auth ni el esquema.

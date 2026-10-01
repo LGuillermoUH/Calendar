@@ -1,0 +1,89 @@
+# docker-compose.prod.yml
+# Produccion en el VPS: usa las imagenes ya publicadas en Docker Hub (no build:).
+# UN SOLO DOMINIO: Traefik enruta el frontend; nginx del frontend hace proxy de
+# /api (y /health) al backend por la red interna. No hay CORS ni segundo dominio.
+#
+# Requisitos previos en el VPS:
+#   - Traefik ya corriendo, con un entrypoint 'websecure' (443) y un
+#     certresolver (Let's Encrypt). Ajusta ${TRAEFIK_CERTRESOLVER} y el nombre
+#     de la red externa (${TRAEFIK_NETWORK}) a los de tu instalacion.
+#   - La red externa de Traefik ya creada (docker network ls).
+#   - Un .env junto a este fichero con las variables de abajo.
+#
+# Uso:
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    # Sin 'ports:' — la base de datos NO se expone al exterior.
+
+  backend:
+    image: docker.io/${DOCKERHUB_USER}/salonevents-backend:${TAG}
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ISSUER=${JWT_ISSUER}
+      - JWT_AUDIENCE=${JWT_AUDIENCE}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      # Mismo origen (el frontend proxea /api), asi que CORS permite el dominio publico.
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN}
+      # Contacto por WhatsApp (config publica servida en GET /api/config).
+      # Cambiar estos valores = editar .env y 'docker compose up -d' (sin rebuild).
+      - WHATSAPP_PHONE=${WHATSAPP_PHONE}
+      - WHATSAPP_MESSAGE=${WHATSAPP_MESSAGE}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+    # Sin 'ports:' y SIN labels de Traefik: el backend no se expone al exterior;
+    # solo lo alcanza el frontend por la red interna. Escucha en :8080.
+
+  frontend:
+    image: docker.io/${DOCKERHUB_USER}/salonevents-frontend:${TAG}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - internal   # para resolver 'backend:8080' en el proxy de nginx
+      - traefik     # para que Traefik lo enrute desde fuera
+    # Sin 'ports:' — Traefik enruta el trafico. Nginx escucha en :80 y proxea /api.
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=${TRAEFIK_NETWORK}"
+      - "traefik.http.routers.salonevents-web.rule=Host(`${WEB_DOMAIN}`)"
+      - "traefik.http.routers.salonevents-web.entrypoints=websecure"
+      - "traefik.http.routers.salonevents-web.tls=true"
+      - "traefik.http.routers.salonevents-web.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+      - "traefik.http.services.salonevents-web.loadbalancer.server.port=80"
+
+networks:
+  # Red interna privada db <-> backend <-> frontend.
+  internal:
+    driver: bridge
+  # Red externa que ya gestiona tu Traefik. NO la crea este compose.
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK}
+
+volumes:
+  db_data:

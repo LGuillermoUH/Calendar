@@ -1,0 +1,27 @@
+{
+  "decisions": [
+    {
+      "id": "auth-scope",
+      "title": "¿Quién puede acceder a la ruta privada?",
+      "options": ["Un solo administrador (email permitido)", "Cualquier usuario registrado en Supabase Auth", "Registro público + roles en DB (solo admin entra a lo privado)"],
+      "recommended": "Registro público + roles en DB (solo admin entra a lo privado)",
+      "answer": "Registro público + roles en DB (solo admin entra a lo privado)"
+    },
+    {
+      "id": "public-detail",
+      "title": "¿Qué muestra la vista pública en un día apartado?",
+      "options": ["Solo 'Apartado' sin datos privados", "Título del evento pero sin pago/contacto", "Nada, solo un color/marca en el día"],
+      "recommended": "Solo 'Apartado' sin datos privados",
+      "answer": "Solo 'Apartado' sin datos privados"
+    },
+    {
+      "id": "dotnet-auth",
+      "title": "¿Cómo autentica el backend .NET?",
+      "options": ["Valida el JWT de Supabase Auth (el frontend usa correo y contraseña)", "Auth propia en .NET (Identity/JWT propio)"],
+      "recommended": "Valida el JWT de Supabase Auth (el frontend usa correo y contraseña)",
+      "answer": "Valida el JWT de Supabase Auth (el frontend usa correo y contraseña)"
+    }
+  ],
+  "blocking": "Implementación de código completa y verificada (build + pruebas). Pendientes solo pasos que requieren al usuario: crear proyecto Supabase (2.1/2.5), levantar el daemon de Docker Desktop (11.4) y la verificación E2E en vivo (12.1/12.2).",
+  "context": {"template": "React 19 SPA (Vite) + ASP.NET Core Web API + Supabase Postgres; frontend login via Supabase correo+contraseña, .NET API valida el JWT de Supabase para cualquier usuario registrado; Dockerized (frontend + api + compose)"}
+}

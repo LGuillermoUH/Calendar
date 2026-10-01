@@ -1,0 +1,16 @@
+{
+  "decisions": [
+    {
+      "id": "whatsapp-days-scope",
+      "title": "¿En qué días públicos aparece el modal de WhatsApp?",
+      "options": [
+        "Solo en días disponibles (no apartados)",
+        "En cualquier día, disponible o apartado"
+      ],
+      "recommended": "Solo en días disponibles (no apartados)",
+      "answer": "Solo en días disponibles (no apartados)"
+    }
+  ],
+  "blocking": null,
+  "context": { "template": "EventModal.jsx (patrón de modal público)" }
+}

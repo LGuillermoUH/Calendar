@@ -1,0 +1,535 @@
+:root {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --surface-2: #f1f2f7;
+  --text: #1e2233;
+  --muted: #6b7280;
+  --primary: #4f46e5;
+  --primary-contrast: #ffffff;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --reserved: #dc2626;
+  --reserved-bg: #fee2e2;
+  --reserved-contrast: #ffffff;
+  --info-bg: #eef2ff;
+  --info-text: #3730a3;
+  --border: #e5e7eb;
+  --danger: #dc2626;
+  --danger-contrast: #ffffff;
+  --focus-ring: #c7d2fe;
+  --overlay: rgba(0, 0, 0, 0.4);
+  --skeleton-base: #e9eaf0;
+  --skeleton-shine: #f4f5f9;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161f;
+    --surface: #1e2130;
+    --surface-2: #262a3b;
+    --text: #e7e9f2;
+    --muted: #9aa1b5;
+    --primary: #7c74ff;
+    --primary-contrast: #10121a;
+    --accent: #6ea8fe;
+    --accent-contrast: #10121a;
+    --reserved: #f87171;
+    --reserved-bg: #3a1d1d;
+    --reserved-contrast: #f9e6e6;
+    --info-bg: #23263a;
+    --info-text: #c7d2fe;
+    --border: #32384a;
+    --danger: #f87171;
+    --danger-contrast: #1a0f0f;
+    --focus-ring: #3b4a8a;
+    --overlay: rgba(0, 0, 0, 0.6);
+    --skeleton-base: #262a3b;
+    --skeleton-shine: #313650;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+}
+
+* { box-sizing: border-box; }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  color-scheme: light dark;
+}
+
+/* Layout a pantalla completa: la app llena el alto de la ventana y el
+   calendario toma el espacio restante bajo el header, sin scroll de página. */
+html, body, #root { height: 100%; }
+
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+.app-title { font-size: 1.4rem; margin: 0; }
+
+/* Pestañas de administrador (Calendario / Rentas) */
+.app-tabs {
+  display: flex;
+  gap: 0.4rem;
+  padding-bottom: 0.75rem;
+}
+.app-tabs .btn.is-active {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border-color: var(--primary);
+}
+
+/* Listado de rentas */
+.rentals {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.rentals-table-wrap { flex: 1; min-height: 0; overflow: auto; margin-top: 0.5rem; }
+.rentals-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.rentals-table th, .rentals-table td {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+.rentals-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.8rem;
+  z-index: 1;
+}
+.rentals-table tbody tr:hover { background: var(--surface-2); }
+.rentals-table__amount { text-align: right; white-space: nowrap; }
+.rentals-table tfoot td {
+  font-weight: 600;
+  border-top: 2px solid var(--border);
+  border-bottom: none;
+}
+
+.btn {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: filter 0.15s ease, background-color 0.15s ease, color 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
+}
+.btn:hover { filter: brightness(1.05); }
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.btn:disabled { opacity: 0.6; cursor: default; }
+.btn--ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn--danger { background: var(--danger); }
+
+.calendar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.calendar-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+.calendar-nav__right { display: flex; align-items: center; gap: 0.5rem; }
+.calendar-today { font-size: 0.85rem; }
+.calendar-title { font-size: 1.15rem; margin: 0; }
+
+/* Conmutador Mes / Semana */
+.view-toggle {
+  display: inline-flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+}
+.view-toggle .btn {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}
+.view-toggle .btn:hover { filter: none; color: var(--text); }
+.view-toggle .btn.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.weekday-row, .calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+/* La rejilla del mes llena el alto disponible; las semanas se reparten por igual. */
+.calendar-grid {
+  flex: 1;
+  min-height: 0;
+  grid-auto-rows: 1fr;
+}
+.weekday { text-align: center; font-size: 0.8rem; color: var(--muted); padding: 0.25rem 0; }
+
+.day-cell {
+  position: relative;
+  min-height: 64px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 6px;
+  font: inherit;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.day-cell:hover { border-color: var(--accent); transform: translateY(-1px); }
+.day-cell--empty:hover { border-color: transparent; transform: none; }
+.day-cell:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.day-cell--empty { border: none; background: transparent; cursor: default; }
+.day-cell--reserved { background: var(--reserved-bg); border-color: var(--reserved); }
+.day-cell--today { border-color: var(--accent); }
+.day-cell--today .day-number {
+  color: var(--accent-contrast);
+  background: var(--accent);
+  border-radius: 999px;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.35rem;
+}
+.day-cell--selected { box-shadow: 0 0 0 2px var(--primary) inset; }
+.day-number { font-weight: 600; }
+.day-tag {
+  margin-top: auto;
+  font-size: 0.7rem;
+  background: var(--reserved);
+  color: var(--reserved-contrast);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+.day-dot { margin-top: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+.day-tag--free { background: #16a34a; color: #fff; }
+
+.hint { color: var(--muted); font-size: 0.85rem; margin-top: 0.75rem; }
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-top: 0.85rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.legend-item { display: inline-flex; align-items: center; gap: 0.35rem; }
+.legend-swatch {
+  width: 0.85rem; height: 0.85rem; border-radius: 4px;
+  border: 1px solid var(--border); display: inline-block;
+}
+.legend-swatch--today { background: var(--accent); border-color: var(--accent); }
+.legend-swatch--reserved { background: var(--reserved-bg); border-color: var(--reserved); }
+.legend-swatch--events { background: var(--primary); border-color: var(--primary); border-radius: 50%; }
+.legend-swatch--free { background: var(--surface); border-color: var(--border); }
+.calendar-count { color: var(--text); font-size: 0.85rem; margin: 0.5rem 0 0; font-weight: 600; }
+
+/* Skeleton de la rejilla mientras carga */
+.day-cell--skeleton {
+  cursor: default;
+  background: var(--surface);
+}
+.skeleton-line {
+  display: block;
+  border-radius: 4px;
+  background: var(--skeleton-base);
+  background-image: linear-gradient(
+    90deg,
+    var(--skeleton-base) 0%,
+    var(--skeleton-shine) 50%,
+    var(--skeleton-base) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+.skeleton-line--num { width: 1.4rem; height: 1.4rem; border-radius: 50%; }
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Spinner inline (botones en estado de carga) */
+.spinner-wrap { display: inline-flex; align-items: center; gap: 0.45rem; }
+.spinner {
+  width: 0.9em; height: 0.9em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spinner-rotate 0.6s linear infinite;
+}
+@keyframes spinner-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Estado vacío amable (modal de vista sin eventos) */
+.empty-state {
+  text-align: center;
+  padding: 1.5rem 1rem 0.5rem;
+  color: var(--muted);
+}
+.empty-state__icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+.empty-state__title { color: var(--text); font-weight: 600; margin: 0 0 0.25rem; }
+.empty-state__hint { font-size: 0.85rem; margin: 0; }
+
+/* Campo de contraseña con toggle mostrar/ocultar */
+.password-field { position: relative; display: flex; }
+.password-field input { flex: 1; padding-right: 2.4rem; }
+.password-toggle {
+  position: absolute;
+  right: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.25rem;
+  border-radius: 6px;
+  color: var(--muted);
+}
+.password-toggle:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 1px; }
+
+/* Error por campo */
+.field-error { color: var(--reserved); font-size: 0.78rem; margin-top: 0.15rem; }
+
+/* Indicador de fortaleza de contraseña */
+.pw-strength { margin-top: 0.4rem; }
+.pw-strength__bar {
+  height: 6px; border-radius: 999px; overflow: hidden;
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.pw-strength__fill { display: block; height: 100%; width: 0; transition: width 0.2s ease, background-color 0.2s ease; }
+.pw-strength__fill--0 { width: 8%;   background: var(--reserved); }
+.pw-strength__fill--1 { width: 30%;  background: #f59e0b; }
+.pw-strength__fill--2 { width: 55%;  background: #eab308; }
+.pw-strength__fill--3 { width: 80%;  background: #84cc16; }
+.pw-strength__fill--4 { width: 100%; background: #16a34a; }
+.pw-strength__label { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+
+/* Mensajes de resultado del acceso (aviso informativo vs error) */
+.auth-msg {
+  display: flex; align-items: flex-start; gap: 0.5rem;
+  padding: 0.6rem 0.75rem; border-radius: 8px;
+  margin: 0.75rem 0 0; font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+.auth-msg:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.auth-msg__icon { flex: none; line-height: 1.2; }
+.auth-msg--info { background: var(--info-bg); color: var(--info-text); border-color: var(--info-text); }
+.auth-msg--error { background: var(--reserved-bg); color: var(--reserved); border-color: var(--reserved); }
+.banner { padding: 0.5rem 0.75rem; border-radius: 8px; background: var(--info-bg); color: var(--info-text); margin: 0.5rem 0; }
+.banner--error { background: var(--reserved-bg); color: var(--reserved); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: var(--overlay);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem; z-index: 50;
+  animation: overlay-in 0.18s ease both;
+}
+.modal {
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-radius: 12px; width: 100%; max-width: 460px;
+  max-height: 90vh; overflow: auto; padding: 1.25rem;
+  animation: modal-in 0.2s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-header { display: flex; align-items: center; justify-content: space-between; }
+.modal-header h2 { font-size: 1.15rem; margin: 0; }
+.modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); }
+.modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+
+.field { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.75rem; font-size: 0.9rem; }
+.field--check { flex-direction: row; align-items: center; gap: 0.5rem; }
+.field input, .field textarea {
+  border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem; font: inherit;
+  background: var(--surface-2); color: var(--text);
+}
+.field input:focus-visible, .field textarea:focus-visible { outline: 3px solid var(--focus-ring); }
+
+.form-errors { color: var(--reserved); background: var(--reserved-bg); border-radius: 8px; padding: 0.5rem 0.75rem; list-style-position: inside; margin: 0.75rem 0 0; }
+
+.event-list { list-style: none; padding: 0; margin: 0.5rem 0 0; }
+.event-item { border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem; margin-bottom: 0.75rem; }
+.event-item__head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.event-item__data { margin: 0.5rem 0 0; }
+.event-item__data > div { display: flex; gap: 0.5rem; font-size: 0.9rem; }
+.event-item__data dt { color: var(--muted); min-width: 70px; margin: 0; }
+.event-item__data dd { margin: 0; }
+.event-form__date { color: var(--muted); font-size: 0.9rem; }
+
+/* Modal público de contacto por WhatsApp */
+.wa-date { color: var(--text); font-size: 0.95rem; margin: 0.75rem 0 0.25rem; }
+.wa-lead { color: var(--muted); font-size: 0.9rem; margin: 0.5rem 0 0.5rem; }
+.wa-preview {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+/* Transición al cambiar de mes/semana o de modo de vista (fade + slide). */
+.view-fade { animation: view-fade-in 0.22s ease both; }
+@keyframes view-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Móvil: la rejilla sigue en 7 columnas pero compacta; el layout general se estrecha. */
+@media (max-width: 560px) {
+  .app { padding: 0.5rem; }
+
+  /* Header: título + botón de sesión equilibrados, sin pegarse al borde. */
+  .app-header { gap: 0.5rem; padding-bottom: 0.75rem; }
+  .app-title { font-size: 1.2rem; }
+  .app-header .btn { padding: 0.5rem 0.75rem; font-size: 0.9rem; }
+
+  /* Pestañas de administrador a ancho completo, repartidas. */
+  .app-tabs .btn { flex: 1; }
+
+  /* Barra de navegación del calendario: envuelve a segunda fila si no cabe,
+     con áreas táctiles cómodas y sin desbordes. */
+  .calendar-nav {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    row-gap: 0.5rem;
+  }
+  .calendar-title { flex: 1 1 auto; font-size: 1.05rem; }
+  .calendar-nav__right { flex: 1 1 100%; justify-content: space-between; }
+  .calendar-nav .btn { min-height: 40px; }
+  .view-toggle .btn { min-height: 34px; }
+
+  /* Celdas de día compactas pero legibles. */
+  .day-cell { min-height: 44px; padding: 4px; }
+  .day-number { font-size: 0.85rem; }
+  .day-tag { font-size: 0.6rem; padding: 1px 4px; }
+  .weekday { font-size: 0.7rem; }
+  /* En móvil el calendario puede crecer y hacer scroll interno si no cabe. */
+  .app { height: auto; min-height: 100vh; }
+  .calendar-grid { grid-auto-rows: minmax(44px, auto); }
+
+  /* Leyenda y ayuda: mismo espaciado, sin recortes. */
+  .calendar-legend { gap: 0.5rem 0.85rem; }
+
+  /* Modal a ancho útil con márgenes; acciones apiladas a ancho completo. */
+  .modal-overlay { padding: 0.75rem; align-items: flex-end; }
+  .modal { max-width: 100%; max-height: 88vh; padding: 1rem; }
+  .modal-actions { flex-direction: column-reverse; align-items: stretch; }
+  .modal-actions .btn { width: 100%; }
+}
+
+/* Respeta la preferencia del sistema: sin animaciones ni transiciones. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .day-cell:hover,
+  .btn:active { transform: none !important; }
+}
+
+
+/* Tabs de Acceso: segmented control (iniciar sesión / registrarse) */
+.tab-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 3px;
+}
+.tab-row .btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+}
+.tab-row .btn:hover { filter: none; color: var(--text); }
+.tab-row .btn.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}

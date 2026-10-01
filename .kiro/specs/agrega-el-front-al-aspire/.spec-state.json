@@ -1,0 +1,18 @@
+{
+  "decisions": [
+    {
+      "id": "rentals-data-scope",
+      "title": "La pantalla de listado de rentas del admin, ¿debe listar TODAS las rentas históricas o solo el rango visible (mes/semana actual)?",
+      "options": [
+        "Solo el rango visible (mes/semana) usando getEvents actual",
+        "Todas las rentas históricas (requiere endpoint de backend nuevo)"
+      ],
+      "recommended": "Solo el rango visible (mes/semana) usando getEvents actual",
+      "answer": "Solo el rango visible (mes/semana) usando getEvents actual"
+    }
+  ],
+  "blocking": null,
+  "context": {
+    "template": "backend/SalonEvents.AppHost/AppHost.cs (patrón de recurso Aspire con WithReference)"
+  }
+}

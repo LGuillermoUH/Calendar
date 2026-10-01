@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────
+# Node / frontend (Vite + React)
+# ─────────────────────────────────────────────
+node_modules/
+dist/
+frontend/dist/
+.vite/
+*.local
+
+# Logs de npm / herramientas JS
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Cobertura / resultados de test (Vitest)
+coverage/
+frontend/coverage/
+.nyc_output/
+
+# ─────────────────────────────────────────────
+# .NET / backend
+# ─────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+*.cache
+
+# Visual Studio / Rider / Aspire
+.vs/
+.vshistory/
+*.DotSettings.user
+[Rr]elease/
+[Dd]ebug/
+
+# Resultados de pruebas .NET
+TestResults/
+[Tt]est[Rr]esults/
+*.trx
+*.coverage
+*.coverlet.json
+
+# ─────────────────────────────────────────────
+# Env / secretos (NUNCA versionar; sólo *.example)
+# ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.prod.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# ─────────────────────────────────────────────
+# Scripts de desarrollo / build local (omitidos a petición)
+# ─────────────────────────────────────────────
+scripts/
+
+# ─────────────────────────────────────────────
+# KiroCrew: ajustes locales de la CLI (no del proyecto)
+# Se conservan .kiro/specs y .kiro/agents
+# ─────────────────────────────────────────────
+.kiro/settings/
+
+# ─────────────────────────────────────────────
+# SO / editores
+# ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp

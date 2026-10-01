@@ -1,0 +1,7 @@
+{
+  "decisions": [],
+  "blocking": null,
+  "context": {
+    "template": "frontend/src/lib/eventsState.js (replaceMonth + normalizeInitial), consumido por Calendar.jsx y EventForm.jsx; test en eventsState.test.js. Implementado y verificado: lint limpio, 48 pruebas verdes."
+  }
+}
